@@ -1,6 +1,6 @@
 local moversion = 'none'
 local gamename = 'tang'
---//定义部分
+--// 定义部分
 local library = loadstring(game:HttpGet('https://pastebin.com/raw/KpJ6BTDi'))()
 local Services = loadstring(game:HttpGet('https://pastebin.com/raw/sdciknwh'))()
 local Utility = loadstring(game:HttpGet('https://pastebin.com/raw/Ktx2Njie'))()
@@ -27,12 +27,11 @@ end
 
 local functions = {}
 
-do --//玩家功能部分
+do --// 玩家功能部分
 	function functions.speedHack(toggle)
 		if (not toggle) then
 			maid.speedHack = nil;
 			maid.speedHackBv = nil;
-
 			return;
 		end;
 
@@ -43,7 +42,6 @@ do --//玩家功能部分
 
 			maid.speedHackBv = maid.speedHackBv or Instance.new('BodyVelocity');
 			maid.speedHackBv.MaxForce = Vector3.new(100000, 0, 100000);
-
 			maid.speedHackBv.Parent = rootPart or nil;
 			maid.speedHackBv.Velocity = (humanoid.MoveDirection.Magnitude ~= 0 and humanoid.MoveDirection or gethiddenproperty(humanoid, 'WalkDirection')) * library.Flags.speedHackValue.CurrentValue;
 		end);
@@ -70,20 +68,16 @@ do --//玩家功能部分
     function functions.noClip(toggle)
         if (not toggle or not library.Flags.noclip.CurrentValue) then
             maid.noClip = nil
-    
             local humanoid = Utility:getPlayerData().humanoid
             if (not humanoid) then return end
-    
             humanoid:ChangeState('Physics')
             task.wait()
             humanoid:ChangeState('RunningNoPhysics')
-    
             return
         end
     
         maid.noClip = RunService.Stepped:Connect(function()
             local myCharacterParts = Utility:getPlayerData().parts
-    
             for _, v in next, myCharacterParts do
                 v.CanCollide = false
             end
@@ -94,11 +88,9 @@ do --//玩家功能部分
 
     function functions.noFog(t)
         if not t then Lighting.Atmosphere.Density = lastFogDensity; maid.noFog = nil; return; end
-    
         maid.noFog = Lighting.Atmosphere:GetPropertyChangedSignal('Density'):Connect(function()
             Lighting.Atmosphere.Density = 0;
         end);
-    
         lastFogDensity = Lighting.Atmosphere.Density;
         Lighting.Atmosphere.Density = 0;
     end
@@ -106,12 +98,10 @@ do --//玩家功能部分
     function functions.noBlur(t)
         local dof = Lighting.DepthOfField;
         if not t then maid.noBlur = nil; dof.Enabled = true; return; end
-    
         maid.noBlur = Lighting.DepthOfField:GetPropertyChangedSignal('Enabled'):Connect(function()
             if not dof.Enabled then return; end
             dof.Enabled = false;
         end);
-    
         dof.Enabled = false;
     end
     
@@ -123,7 +113,6 @@ do --//玩家功能部分
             Lighting.Ambient, Lighting.Brightness = oldAmbient, oldBritghtness;
             return
         end;
-    
         oldAmbient, oldBritghtness = Lighting.Ambient, Lighting.Brightness;
         maid.fullBright = Lighting:GetPropertyChangedSignal('Ambient'):Connect(function()
             Lighting.Ambient = Color3.fromRGB(255, 255, 255);
@@ -133,7 +122,7 @@ do --//玩家功能部分
     end;
 end
 
-do--//辅助函数部分
+do--// 辅助函数部分
     function functions.simulateTouch(part)
         if part and part:IsA("BasePart") then
             firetouchinterest(root, part, 0)
@@ -199,7 +188,7 @@ do--//辅助函数部分
     end
 end
 
-do--//主功能部分
+do--// 主功能部分
     function functions.autohorn(toggle)
         while true do
             if not toggle or not library.Flags.autohorn.CurrentValue then break end
@@ -356,11 +345,72 @@ do--//主功能部分
             game.ReplicatedStorage.rEvents.elementMasteryEvent:FireServer(v.Name)
         end
     end
+    
+    -- 金钱修改功能
+    function functions.modifyMoney(amount)
+        game:GetService("Players").LocalPlayer.Money.Value = amount
+    end
 end
 
---//UI部分
+-- 帧率计数器与时间显示
+local LBLG = Instance.new("ScreenGui", game.CoreGui)
+LBLG.Name = "LBLG"
+LBLG.Enabled = true
+
+local player = game.Players.LocalPlayer
+
+local LBL = Instance.new("TextLabel", LBLG)
+LBL.Name = "LBL"
+LBL.Parent = LBLG
+LBL.BackgroundColor3 = Color3.new(1, 1, 1)
+LBL.BackgroundTransparency = 1
+LBL.BorderColor3 = Color3.new(0, 0, 0)
+LBL.Position = UDim2.new(0.75, 0, 0.010, 0)
+LBL.Size = UDim2.new(0, 133, 0, 30)
+LBL.Font = Enum.Font.GothamSemibold
+LBL.Text = "凌脚本"
+LBL.TextColor3 = Color3.new(0, 85, 255)
+LBL.TextScaled = true
+LBL.TextSize = 14
+LBL.TextWrapped = true
+LBL.Visible = true
+
+local Heartbeat = game:GetService("RunService").Heartbeat
+local LastIteration, Start = 0, tick()
+local FrameUpdateTable = { }
+
+local function HeartbeatUpdate()
+    LastIteration = tick()
+    table.insert(FrameUpdateTable, LastIteration)
+    if #FrameUpdateTable > 60 then 
+        table.remove(FrameUpdateTable, 1)
+    end
+
+    local CurrentFPS = #FrameUpdateTable / (LastIteration - Start)
+    CurrentFPS = math.floor(CurrentFPS + 0.5)
+    
+    local formattedTime = string.format("%02d:%02d:%02d", os.date("%H"), os.date("%M"), os.date("%S"))
+    LBL.Text = ("凌时间 " .. formattedTime)
+    
+    local rainbowColors = {
+        Color3.new(1, 0, 0), -- 红色
+        Color3.new(1, 1, 0), -- 黄色
+        Color3.new(0, 1, 0), -- 绿色
+        Color3.new(0, 0, 1), -- 蓝色
+        Color3.new(1, 0, 1), -- 紫色
+        Color3.new(1, 1, 1), -- 白色
+        Color3.new(0, 0, 0), -- 黑色
+    }
+    local rainbowIndex = math.floor((LastIteration % 6) + 1)
+    LBL.TextColor3 = rainbowColors[rainbowIndex]
+end
+
+Start = tick()
+Heartbeat:Connect(HeartbeatUpdate)
+
+--// UI部分
 local Window = library:CreateWindow({
-    Name = "Mohun-Ware-"..tostring(moversion)..'-'..gamename,
+    Name = "凌脚本-"..tostring(moversion)..'-'..gamename,
     Icon = 0,
     LoadingTitle = "欢迎使用凌脚本",
     LoadingSubtitle = "玩的开心",
@@ -370,27 +420,28 @@ local Window = library:CreateWindow({
     DisableBuildWarnings = false,
 
     ConfigurationSaving = {
-    Enabled = true,
-    FolderName = nil,
-    FileName = "Mohun-Ware"
+        Enabled = true,
+        FolderName = nil,
+        FileName = "Mohun-Ware"
     },
 
     Discord = {
-    Enabled = true,
-    Invite = "gCcExNxhjQ",
-    RememberJoins = false
+        Enabled = true,
+        Invite = "gCcExNxhjQ",
+        RememberJoins = false
     }
 })
 
-local Tab = Window:CreateTab("杂项", 4483362458)
+local Tab = Window:CreateTab("主页", 4483362458)
 local Tab2 = Window:CreateTab('玩家类', 4483362458)
 local Tab3 = Window:CreateTab('环境类', 4483362458)
 local Tab4 = Window:CreateTab('自动刷钱', 4483362458)
 local Tab5 = Window:CreateTab('汽车类', 4483362458)
-local Tab6 = Window:CreateTab('忍者传奇', 4483362458) -- 新增的忍者传奇标签页
+local Tab6 = Window:CreateTab('忍者传奇', 4483362458)
+local Tab7 = Window:CreateTab('传送点', 4483362458)
 
 do
-    Tab:CreateSection("双重防挂机检测已自动开启")
+    Tab:CreateSection("基础功能")
     Tab:CreateButton({
         Name = "打开买车菜单",
         Callback = function()
@@ -422,6 +473,7 @@ do
 end
 
 do
+    Tab2:CreateSection("角色控制")
     Tab2:CreateButton({
         Name = "重生",
         Callback = function()
@@ -476,6 +528,7 @@ do
 end    
     
 do
+    Tab3:CreateSection("环境控制")
     Tab3:CreateToggle({
         Name = "没有雾霾",
         CurrentValue = false,
@@ -503,6 +556,7 @@ do
 end
 
 do
+    Tab4:CreateSection("刷钱方法")
     Tab4:CreateToggle({
         Name = "自动送快递(不会被踢但速度会慢点)",
         CurrentValue = false,
@@ -527,9 +581,25 @@ do
             functions.autosellcoffee(Value)
         end,
     })
+    
+    
+    Tab4:CreateLabel("修改金钱(仅供娱乐)")
+    Tab4:CreateInput({
+        Name = "请输入金额",
+        PlaceholderText = "输入金钱数量",
+        RemoveTextAfterFocusLost = false,
+        Callback = function(Text)
+            if tonumber(Text) then
+                functions.modifyMoney(tonumber(Text))
+            end
+        end,
+    })
+    
+    Tab4:CreateLabel("在私服刷钱更安全")
 end
 
 do
+    Tab5:CreateSection("汽车控制")
     Tab5:CreateToggle({
         Name = "自动按喇叭",
         CurrentValue = false,
@@ -552,6 +622,7 @@ end
 
 -- 忍者传奇功能标签页
 do
+    Tab6:CreateSection("忍者传奇功能")
     Tab6:CreateToggle({
         Name = "自动挥舞",
         CurrentValue = false,
@@ -585,3 +656,99 @@ do
     })
 end
 
+-- 传送点功能标签页
+do
+    Tab7:CreateSection("常用传送点")
+    Tab7:CreateButton({
+        Name = "警察局",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5513.97412109375, 8.656171798706055, 4964.291015625)
+        end
+    })
+    Tab7:CreateButton({
+        Name = "出生点",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-3338.31982421875, 10.048742294311523, 3741.84033203125)
+        end
+    })
+    Tab7:CreateButton({
+        Name = "医院",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5471.482421875, 14.149418830871582, 4259.75341796875)
+        end
+    })
+    
+    Tab7:CreateSection("餐厅传送点")
+    Tab7:CreateButton({
+        Name = "火锅店",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5912.84765625, 12.217276573181152, 1058.29443359375)
+        end
+    })
+    Tab7:CreateButton({
+        Name = "羊杂汤",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-6027.08447265625, 10.092833518981934, 3383.9697265625)
+        end
+    })
+    Tab7:CreateButton({
+        Name = "茶丸趣",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5876.77099609375, 10.152806282043457, 3682.9130859375)
+        end
+    })
+    Tab7:CreateButton({
+        Name = "隆昌包子铺",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5617.0498046875, 9.716679573059082, 4428.56103515625)
+        end
+    })
+    Tab7:CreateButton({
+        Name = "杭州包子铺",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-5209.8603515625, 9.41347599029541, 5437.134765625)
+        end
+    })
+    
+    Tab7:CreateSection("其他地点")
+    Tab7:CreateButton({
+        Name = "庆都山底",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-15595.44140625, 7.148616313934326, 21123.388671875)
+        end
+    })
+    Tab7:CreateButton({
+        Name = "庆都山楼梯底",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-15332.2744140625, 23.315601348876953, 21708.1875)
+        end
+    })
+    Tab7:CreateButton({
+        Name = "庆都山顶",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-15012.6015625, 324.337646484375, 22416.99609375)
+        end
+    })
+    Tab7:CreateButton({
+        Name = "露营地",
+        Callback = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-1713.2999267578125, 9.000035285949707, 10979.6220703125)
+        end
+    })
+end
+
+-- 系统监控UI（保持运行）
+while true do
+    task.wait()
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer and player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass('Humanoid')
+            if humanoid then
+                humanoid.NameDisplayDistance = 9e9
+                humanoid.NameOcclusion = "NoOcclusion"
+                humanoid.HealthDisplayDistance = 9e9
+                humanoid.HealthDisplayType = "AlwaysOn"
+            end
+        end
+    end
+end
