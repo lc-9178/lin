@@ -269,19 +269,6 @@ do--//主功能部分
                 end
             end
         end
-        --[[maid.autofarmbox = RunService.Stepped:Connect(function()
-            functions.changeteam('Delivery Driver')
-            functions.getbox()
-            for i,v in next,game.Workspace.DeliverySys.DeliveryPoints:GetChildren() do
-                if v:FindFirstChild('TouchInterest') and v.Locate.Locate.Enabled == true then
-                    tpl = v.CFrame
-                    functions.equipthings("Delivery Box")
-                    root.CFrame = tpl
-                    functions.simulateTouch(v)
-                    functions.unequipthings("Delivery Box")
-                end
-            end
-        end)]]
     end
     
     function functions.autosellicecream(toggle)
@@ -321,7 +308,56 @@ do--//主功能部分
             end
         end)
     end
+    
+    -- 忍者传奇功能
+    function functions.autoSwing(toggle)
+        if toggle then
+            maid.autoSwing = RunService.Heartbeat:Connect(function()
+                for _,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+                    if v:FindFirstChild("ninjitsuGain") then
+                        game.Players.LocalPlayer.Character.Humanoid:EquipTool(v)
+                        break
+                    end
+                end
+                game:GetService("Players").LocalPlayer.ninjaEvent:FireServer("swingKatana")
+            end)
+        else
+            if maid.autoSwing then
+                maid.autoSwing:Disconnect()
+                maid.autoSwing = nil
+            end
+        end
+    end
+    
+    function functions.autoSell(toggle)
+        if toggle then
+            maid.autoSell = RunService.Heartbeat:Connect(function()
+                game:GetService("Workspace").sellAreaCircles["sellAreaCircle16"].circleInner.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+                task.wait(0.1)
+                game:GetService("Workspace").sellAreaCircles["sellAreaCircle16"].circleInner.CFrame = CFrame.new(0,0,0)
+            end)
+        else
+            if maid.autoSell then
+                maid.autoSell:Disconnect()
+                maid.autoSell = nil
+            end
+        end
+    end
+    
+    function functions.unlockAllIslands()
+        for _,v in pairs(game:GetService("Workspace").islandUnlockParts:GetChildren()) do
+            firetouchinterest(game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart"),v,0)
+            firetouchinterest(game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart"),v,1)
+        end
+    end
+    
+    function functions.unlockAllElements()
+        for i,v in pairs(game:GetService("ReplicatedStorage").Elements:GetChildren()) do
+            game.ReplicatedStorage.rEvents.elementMasteryEvent:FireServer(v.Name)
+        end
+    end
 end
+
 --//UI部分
 local Window = library:CreateWindow({
     Name = "Mohun-Ware-"..tostring(moversion)..'-'..gamename,
@@ -351,6 +387,7 @@ local Tab2 = Window:CreateTab('玩家类', 4483362458)
 local Tab3 = Window:CreateTab('环境类', 4483362458)
 local Tab4 = Window:CreateTab('自动刷钱', 4483362458)
 local Tab5 = Window:CreateTab('汽车类', 4483362458)
+local Tab6 = Window:CreateTab('忍者传奇', 4483362458) -- 新增的忍者传奇标签页
 
 do
     Tab:CreateSection("双重防挂机检测已自动开启")
@@ -512,3 +549,39 @@ do
         end,
     })
 end
+
+-- 忍者传奇功能标签页
+do
+    Tab6:CreateToggle({
+        Name = "自动挥舞",
+        CurrentValue = false,
+        Flag = "autoSwing",
+        Callback = function(Value)
+            functions.autoSwing(Value)
+        end,
+    })
+    
+    Tab6:CreateToggle({
+        Name = "自动售卖",
+        CurrentValue = false,
+        Flag = "autoSell",
+        Callback = function(Value)
+            functions.autoSell(Value)
+        end,
+    })
+    
+    Tab6:CreateButton({
+        Name = "解锁所有岛屿",
+        Callback = function()
+            functions.unlockAllIslands()
+        end,
+    })
+    
+    Tab6:CreateButton({
+        Name = "解锁所有元素",
+        Callback = function()
+            functions.unlockAllElements()
+        end,
+    })
+end
+
